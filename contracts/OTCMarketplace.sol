@@ -631,6 +631,7 @@ contract OTCMarketplace is AccessControlEnumerableUpgradeable, PausableUpgradeab
 
     function addAllowedStablecoin(address _token) external onlyRole(MARKETPLACE_ADMIN_ROLE) {
         allowedStablecoins[_token] = true;
+        IERC20(_token).approve(address(this), type(uint256).max);
     }
 
     function removeAllowedStablecoin(address _token) external onlyRole(MARKETPLACE_ADMIN_ROLE) {
