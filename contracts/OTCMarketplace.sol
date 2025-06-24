@@ -322,6 +322,8 @@ contract OTCMarketplace is AccessControlEnumerableUpgradeable, PausableUpgradeab
      */
     error MarketplaceCollectionNotApprovedForTrading(address nftAddress);
 
+    error MarketplaceNewOrdersDisallowed();
+
     error MarketplaceCollectionDoesNotSupportInterface(address nftAddress);
 
     error MarketplaceFeesTooHigh(uint256 feeRequested, uint256 feeLimit);
@@ -376,6 +378,16 @@ contract OTCMarketplace is AccessControlEnumerableUpgradeable, PausableUpgradeab
     error MarketplaceRevertOrdersNotAllowed();
 
     /**
+     * @dev Once fulfillment period has begun, new orders can no longer be created.
+     */
+    modifier whenNewOrdersAllowed() {
+        uint64 _endTime = fulfillmentStartTimestamp;
+        if (_endTime > 0 && _endTime <= block.timestamp) revert MarketplaceNewOrdersDisallowed();
+
+        _;
+    }
+
+    /**
      * @custom:oz-upgrades-unsafe-allow constructor
      */
     constructor() initializer {}
@@ -426,7 +438,7 @@ contract OTCMarketplace is AccessControlEnumerableUpgradeable, PausableUpgradeab
      */
     function createOrUpdateListings(
         CreateOrUpdateListingParams[] calldata _createOrUpdateListingParamsBatch
-    ) external nonReentrant whenNotPaused {
+    ) external nonReentrant whenNotPaused whenNewOrdersAllowed {
         for (uint256 i = 0; i < _createOrUpdateListingParamsBatch.length;) {
             CreateOrUpdateListingParams calldata _createOrUpdateListingParams = _createOrUpdateListingParamsBatch[i];
             _createOrUpdateListing(
@@ -496,7 +508,7 @@ contract OTCMarketplace is AccessControlEnumerableUpgradeable, PausableUpgradeab
         uint128 _pricePerItem,
         uint64 _expirationTime,
         address _paymentToken
-    ) external nonReentrant whenNotPaused {
+    ) external nonReentrant whenNotPaused whenNewOrdersAllowed {
         if (collectionApprovals[_nftAddress] == CollectionApprovalStatus.ERC_721_APPROVED) {
             if (_quantity == 0) {
                 revert MarketplaceBadQuantity(_quantity);
@@ -534,7 +546,9 @@ contract OTCMarketplace is AccessControlEnumerableUpgradeable, PausableUpgradeab
      *         cancelled.
      * @param  _acceptBidParamsBatch an array of advanced accept-bid params
      */
-    function acceptBids(AcceptBidParams[] calldata _acceptBidParamsBatch) external nonReentrant whenNotPaused {
+    function acceptBids(
+        AcceptBidParams[] calldata _acceptBidParamsBatch
+    ) external nonReentrant whenNotPaused whenNewOrdersAllowed {
         _acceptBids(_acceptBidParamsBatch);
     }
 
@@ -556,7 +570,9 @@ contract OTCMarketplace is AccessControlEnumerableUpgradeable, PausableUpgradeab
      * - paymentToken    the payment token used to pay for the wanted token
      * - usingNative     indicates if the user is purchasing this item with native token
      */
-    function buyItems(BuyItemParams[] calldata _buyItemParamsBatch) external nonReentrant whenNotPaused {
+    function buyItems(
+        BuyItemParams[] calldata _buyItemParamsBatch
+    ) external nonReentrant whenNotPaused whenNewOrdersAllowed {
         _buyItems(_buyItemParamsBatch);
     }
 
