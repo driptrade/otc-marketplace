@@ -410,17 +410,11 @@ contract OTCMarketplace is AccessControlEnumerableUpgradeable, PausableUpgradeab
      *         performed before publishing this contract address.
      * @param  _initialFee          marketplace fees, in basis points
      * @param  _initialFeeRecipient wallet to collet marketplace fees
-     * @param  _initialPaymentToken address of the default token that is used for settlement
      */
     function initialize(
         uint256 _initialFee,
-        address _initialFeeRecipient,
-        IERC20 _initialPaymentToken
+        address _initialFeeRecipient
     ) external initializer {
-        if (address(_initialPaymentToken) == address(0)) {
-            revert MarketplaceAddressInvalid(address(_initialPaymentToken));
-        }
-
         __AccessControl_init_unchained();
         __Pausable_init_unchained();
         __ReentrancyGuard_init_unchained();
