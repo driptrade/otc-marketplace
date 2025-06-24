@@ -1139,7 +1139,7 @@ contract OTCMarketplace is AccessControlEnumerableUpgradeable, PausableUpgradeab
     function _fulfillOrder(OrderParams calldata _orderParams) private {
         Order storage _order = _validateOrderParams(_orderParams);
 
-        if (_msgSender() != _orderParams.buyer && _msgSender() != _orderParams.seller) {
+        if (_msgSender() != _orderParams.seller) {
             revert MarketplaceUnauthorizedOrderModification();
         }
 
