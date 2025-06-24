@@ -573,8 +573,8 @@ contract OTCMarketplace is AccessControlEnumerableUpgradeable, PausableUpgradeab
     }
 
     function forfeitOrders(OrderParams[] calldata _orderParams) external nonReentrant whenNotPaused {
-        // can only forfeit order if contract is not paused and and the timestamp has elapsed
-        if (fulfillmentStartTimestamp == 0 || fulfillmentStartTimestamp + fulfillmentDuration < block.timestamp) {
+        // can only forfeit order if contract is not paused and the timestamp has elapsed
+        if (fulfillmentStartTimestamp == 0 || fulfillmentStartTimestamp + fulfillmentDuration >= block.timestamp) {
             revert MarketplaceForfeitOrdersNotAllowed();
         }
 
