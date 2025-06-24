@@ -164,8 +164,6 @@ contract OTCMarketplace is AccessControlEnumerableUpgradeable, PausableUpgradeab
      */
     mapping(address => bool) public allowedStablecoins;
 
-    mapping(address => mapping(uint256 => bool)) public tokenHasSold;
-
     /**
      * @notice mapping for allowed stablecoin payment tokens: stablecoin token address => `true` if allowed
      */
