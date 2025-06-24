@@ -733,7 +733,7 @@ contract OTCMarketplace is AccessControlEnumerableUpgradeable, PausableUpgradeab
         address _paymentToken
     ) private {
         _validateListingOrBidParams(_pricePerItem, _expirationTime);
-        _validateTokenIsTradeable(_nftAddress, _tokenId, _quantity);
+        _validateTokenIsTradeable(_nftAddress, _tokenId, _quantity, _msgSender());
         _validatePaymentMethod(_quantity, _pricePerItem, _paymentToken);
 
         // create or update listing
@@ -829,7 +829,12 @@ contract OTCMarketplace is AccessControlEnumerableUpgradeable, PausableUpgradeab
         address _bidPaymentToken,
         uint128 _pricePerItem
     ) private {
-        _validateTokenIsTradeable(_acceptBidParams.nftAddress, _acceptBidParams.tokenId, _acceptBidParams.quantity);
+        _validateTokenIsTradeable(
+            _acceptBidParams.nftAddress,
+            _acceptBidParams.tokenId,
+            _acceptBidParams.quantity,
+            _msgSender()
+        );
 
         _enterIntoEscrow(
             _pricePerItem,
@@ -915,7 +920,12 @@ contract OTCMarketplace is AccessControlEnumerableUpgradeable, PausableUpgradeab
             }
         }
 
-        _validateTokenIsTradeable(_buyItemParams.nftAddress, _buyItemParams.tokenId, _buyItemParams.quantity);
+        _validateTokenIsTradeable(
+            _buyItemParams.nftAddress,
+            _buyItemParams.tokenId,
+            _buyItemParams.quantity,
+            _buyItemParams.owner
+        );
 
         _enterIntoEscrow(
             _storedPricePerItem,
@@ -1150,7 +1160,12 @@ contract OTCMarketplace is AccessControlEnumerableUpgradeable, PausableUpgradeab
         return _order;
     }
 
-    function _validateTokenIsTradeable(address _nftAddress, uint256 _tokenId, uint64 _quantity) private view {
+    function _validateTokenIsTradeable(
+        address _nftAddress,
+        uint256 _tokenId,
+        uint64 _quantity,
+        address _owner
+    ) private view {
         // make sure token has not been sold already
         if (orderedTokenIds[_nftAddress][_tokenId]) {
             revert MarketplaceTokenAlreadySold(_nftAddress, _tokenId);
@@ -1164,7 +1179,7 @@ contract OTCMarketplace is AccessControlEnumerableUpgradeable, PausableUpgradeab
             }
             IERC721 _nft = IERC721(_nftAddress);
             address _nftOwner = _nft.ownerOf(_tokenId);
-            if (_nftOwner != _msgSender()) {
+            if (_nftOwner != _owner) {
                 revert MarketplaceOwnerDoesNotHoldEnoughQuantity(_nftAddress, _tokenId, 0);
             }
         } else if (status == CollectionApprovalStatus.ERC_1155_APPROVED) {
@@ -1172,7 +1187,7 @@ contract OTCMarketplace is AccessControlEnumerableUpgradeable, PausableUpgradeab
                 revert MarketplaceBadQuantity(_quantity);
             }
             IERC1155 _nft = IERC1155(_nftAddress);
-            uint256 _ownerBalance = _nft.balanceOf(_msgSender(), _tokenId);
+            uint256 _ownerBalance = _nft.balanceOf(_owner, _tokenId);
             if (_ownerBalance < _quantity) {
                 revert MarketplaceOwnerDoesNotHoldEnoughQuantity(_nftAddress, _tokenId, _ownerBalance);
             }
