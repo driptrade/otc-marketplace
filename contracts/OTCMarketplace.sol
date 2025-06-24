@@ -577,7 +577,12 @@ contract OTCMarketplace is AccessControlEnumerableUpgradeable, PausableUpgradeab
     }
 
     function fulfillOrders(OrderParams[] calldata _orderParams) external nonReentrant whenNotPaused {
-        if (fulfillmentStartTimestamp == 0 || fulfillmentStartTimestamp + fulfillmentDuration < block.timestamp) {
+        // can only fulfill order if contract is not paused and the block timestamp is within fulfillment period
+        if (
+            fulfillmentStartTimestamp == 0 ||
+            fulfillmentStartTimestamp > block.timestamp ||
+            fulfillmentStartTimestamp + fulfillmentDuration < block.timestamp
+        ) {
             revert MarketplaceFulfillOrdersNotAllowed();
         }
 
