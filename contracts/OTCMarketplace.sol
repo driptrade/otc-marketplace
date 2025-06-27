@@ -631,7 +631,6 @@ contract OTCMarketplace is AccessControlEnumerableUpgradeable, PausableUpgradeab
 
     function addAllowedStablecoin(address _token) external onlyRole(MARKETPLACE_ADMIN_ROLE) {
         allowedStablecoins[_token] = true;
-        IERC20(_token).approve(address(this), type(uint256).max);
     }
 
     function removeAllowedStablecoin(address _token) external onlyRole(MARKETPLACE_ADMIN_ROLE) {
@@ -1074,7 +1073,11 @@ contract OTCMarketplace is AccessControlEnumerableUpgradeable, PausableUpgradeab
             return;
         }
 
-        _paymentToken.safeTransferFrom(_from, _to, _amount);
+        if (_from == address(this)) {
+            _paymentToken.safeTransfer(_to, _amount);
+        } else {
+            _paymentToken.safeTransferFrom(_from, _to, _amount);
+        }
     }
 
     function _initOrder(
