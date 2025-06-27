@@ -175,16 +175,14 @@ contract OTCMarketplace is AccessControlEnumerableUpgradeable, PausableUpgradeab
 
     /**
      * @notice The marketplace fees were updated
-     * @param  buyerFee  new fee amount (in units of basis points) paid by buyer
-     * @param  sellerFee new fee amount (in units of basis points) paid by seller
+     * @param  feeRecipient the new recipient to get fees
+     * @param  buyerFee     new fee amount (in units of basis points) paid by buyer
+     * @param  sellerFee    new fee amount (in units of basis points) paid by seller
+     * @param  placeholder  A placeholder value that should always be 0. This exists in order
+     *                      to harmonize the `UpdateFees` event topic on this contract with the
+     *                      `UpdateFees` event from our other marketplace contract(s).
      */
-    event UpdateFees(uint256 buyerFee, uint256 sellerFee);
-
-    /**
-     * @notice The fee recipient was updated
-     * @param  feeRecipient  the new recipient to get fees
-     */
-    event UpdateFeeRecipient(address feeRecipient);
+    event UpdateFees(address feeRecipient, uint256 buyerFee, uint256 sellerFee, uint256 placeholder);
 
     /**
      * @notice The approval status for a collection was updated
@@ -739,8 +737,7 @@ contract OTCMarketplace is AccessControlEnumerableUpgradeable, PausableUpgradeab
         buyerFee = _newBuyerFee;
         sellerFee = _newSellerFee;
 
-        emit UpdateFeeRecipient(_newFeeRecipient);
-        emit UpdateFees(_newBuyerFee, _newSellerFee);
+        emit UpdateFees(_newFeeRecipient, _newBuyerFee, _newSellerFee, 0);
     }
 
     /********************************/
